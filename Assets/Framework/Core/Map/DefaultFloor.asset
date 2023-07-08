@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dcb33c509d2a3e34da58b66dfb6cfb8e, type: 3}
+  m_Name: DefaultFloor
+  m_EditorClassIdentifier: 
+  <floorTilemap>k__BackingField: {fileID: 2245218606676739744, guid: 9803ec8e86bb65b48b416af5e995ae90, type: 3}
+  roomSize: 150
+  floorSize: 30
+  <floorTile>k__BackingField: {fileID: 11400000, guid: cc34f9946919448499fef832c202eec9, type: 2}
+  <wallTile>k__BackingField: {fileID: 11400000, guid: 2002da786ebf2c042ae1d0845ecc9905, type: 2}
