@@ -22,10 +22,14 @@ public class Enemy : MonoBehaviour
     [SerializeField] private float shakeDist = 0.2f;
     [SerializeField] private float shakeInterval = 0.2f;
     [SerializeField] private Animator animator;
+
+    private float defaultTimer;
+    private Vector2 wanderDirection;
     
     [SerializeField] private GameObject attackObj;
     [SerializeField] private float attackDist = 4f;
     private float attackTimer;
+    private bool spotted;
 
     // Update is called once per frame
     void Update()
@@ -44,7 +48,9 @@ public class Enemy : MonoBehaviour
             if (hp <= 0)
             {
                 Instantiate(GameMan.inst.plume, transform.position, Quaternion.identity);
+                GameMan.inst.AddTime(3);
                 Destroy(gameObject);
+                AudioManager.instance.PlaySound("Dash");
             }
             else
             {
@@ -65,14 +71,41 @@ public class Enemy : MonoBehaviour
                     if (_currentRoom != null && PlayerCore.inst.currentRoom == _currentRoom)
                     {
                         currentState = State.Chase;
+                        spotted = true;
                     }
+
+                    if (defaultTimer > 0f)
+                    {
+                        defaultTimer -= Time.deltaTime;
+                        if (defaultTimer <= 0f)
+                        {
+                            attackTimer = 2f;
+                            currentState = State.Attack;
+                        }
+                    }
+
+                    
                     break;
                 
                 case State.Attack:
                     attackTimer -= Time.deltaTime;
                     if (attackTimer < 1f && attackTimer + Time.deltaTime > 1f)
                     {
-                        ThrowAttack();
+                        if (_currentRoom != null)
+                        {
+                            if (PlayerCore.inst.currentRoom == _currentRoom)
+                            {
+                                ThrowAttack(PlayerCore.inst.transform.position);
+                            }
+                            else
+                            {
+                                ThrowAttack(_currentRoom.bounds.center);
+                            }
+                        }
+
+                        float angle = Random.Range(0f, 360f);
+                        wanderDirection = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * (speed * 0.5f);
+                        defaultTimer = 4f;
                     }
 
                     if (attackTimer < 0f)
@@ -89,7 +122,7 @@ public class Enemy : MonoBehaviour
             // check for damage
             var currentTileData = GameMan.inst.map.GetFloor(0).GetTileData(pos.x, pos.y);
             float oldHP = hp;
-            hp -= currentTileData.heat * Time.deltaTime * 2.5f;
+            if (currentTileData != null) hp -= currentTileData.heat * Time.deltaTime * 2.5f;
             if ((int)oldHP != (int)hp)
             {
                 // hurt
@@ -100,12 +133,14 @@ public class Enemy : MonoBehaviour
                 animator.Play("EnemyHurt");
             }
         }
+
+        if (spotted) skin.localScale = Vector2.Lerp(skin.localScale, Vector2.one, 5f * Time.deltaTime);
     }
 
-    private void ThrowAttack()
+    private void ThrowAttack(Vector3 position)
     {
         Projectile proj = Instantiate(attackObj, transform.position, Quaternion.identity).GetComponent<Projectile>();
-        proj.Init(transform.position, PlayerCore.inst.transform.position, 1f);
+        proj.Init(transform.position, position, 1f);
     }
 
     private void Chase()
@@ -137,7 +172,7 @@ public class Enemy : MonoBehaviour
             {
                 default:
                 case State.Default:
-                    rb.velocity = Vector2.zero;
+                    rb.velocity = wanderDirection;
                     break;
                 
                 case State.Attack:

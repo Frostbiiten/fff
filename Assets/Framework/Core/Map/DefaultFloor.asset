@@ -44,7 +44,6 @@ MonoBehaviour:
     m_NumAlphaKeys: 2
   <floorTilemap>k__BackingField: {fileID: 2245218606676739744, guid: 9803ec8e86bb65b48b416af5e995ae90, type: 3}
   roomSize: 190
-  floorSize: 25
   tileBounceAnim:
     serializedVersion: 2
     m_Curve:
@@ -75,6 +74,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: dc4e3b4286558ba4baea9637ff1a31d6, type: 2}
   - {fileID: 11400000, guid: 22e79dc4288c23044b854e63853b268f, type: 2}
   <fireParticles>k__BackingField: {fileID: 4569413398940610949, guid: ef9b73183450141428e7d605cb1f5073, type: 3}
+  <fireSounds>k__BackingField: {fileID: 6323224300326634046, guid: a847a150ed9f8f048ad6bd86941254b3, type: 3}
   <outsideTile>k__BackingField: {fileID: 11400000, guid: c6381d59dd285c1438d48ff4fb94c6d7, type: 2}
   <floorTile>k__BackingField: {fileID: 11400000, guid: cc34f9946919448499fef832c202eec9, type: 2}
   <wallTile>k__BackingField: {fileID: 11400000, guid: 2002da786ebf2c042ae1d0845ecc9905, type: 2}

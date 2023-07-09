@@ -34,6 +34,7 @@ public class Projectile : MonoBehaviour
                 // explode
                 GameMan.inst.camShaker.ShakeOnce(15f, 4f, 0f, 0.85f);
                 skin.gameObject.SetActive(false);
+                AudioManager.instance.PlaySound("SmallImpact");
                 
                 // Splat
                 var floor = GameMan.inst.map.GetFloor(0);

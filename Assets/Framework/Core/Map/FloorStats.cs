@@ -11,10 +11,17 @@ public class FloorStats : ScriptableObject
     [field: SerializeField] public GameObject floorTilemap { get; private set; }
 
     [field: SerializeField] public int roomSize;
-    [field: SerializeField] public int floorSize;
+    public int floorSize {
+        get
+        {
+            return 20 + (int)Mathf.Pow(Progressor.instance.currentLevel, 1.6f);
+        }
+    }
+    
     [field: SerializeField] public AnimationCurve tileBounceAnim;
     [field: SerializeField] public TileBase[] floorTiles { get; private set; }
     [field: SerializeField] public GameObject fireParticles { get; private set; }
+    [field: SerializeField] public GameObject fireSounds { get; private set; }
 
     [field: SerializeField] public TileBase outsideTile { get; private set; }
     [field: SerializeField] public TileBase floorTile { get; private set; }

@@ -56,6 +56,8 @@ public class PlayerCore : MonoBehaviour
     [SerializeField] private Animator ripAnim;
     [SerializeField] private ParticleSystem ripParticles;
 
+    [SerializeField] private AudioSource spraySound;
+
     public void Awake()
     {
         if (inst != null) Debug.Break();
@@ -75,10 +77,16 @@ public class PlayerCore : MonoBehaviour
 
     private void UpdateCamera()
     {
-        Vector3 targetPos = (currentRoom == null || true) ? transform.position : currentRoom.bounds.center;
-        targetPos += (cam.ScreenToViewportPoint(Mouse.current.position.value) - Vector3.one / 2f) * mouseCamOffset;
-        cam.transform.position = Vector3.Lerp(cam.transform.position, targetPos, Time.deltaTime * cameraLerpConst); // lerp w/ deltatime is fine here
-        particlesRef.position = Vector3.Lerp(particlesRef.position, transform.position, Time.deltaTime * particlesRefLerp);
+        Vector3 targetPos = transform.position + (cam.ScreenToViewportPoint(Mouse.current.position.value) - Vector3.one / 2f) * mouseCamOffset;
+        if (GameMan.inst.completeTimer > 0f || dead)
+        {
+            cam.transform.position = Vector3.Lerp(cam.transform.position, targetPos, Time.unscaledDeltaTime * cameraLerpConst);
+        }
+        else
+        {
+            cam.transform.position = Vector3.Lerp(cam.transform.position, targetPos, Time.deltaTime * cameraLerpConst); // lerp w/ deltatime is fine here
+            particlesRef.position = Vector3.Lerp(particlesRef.position, transform.position, Time.deltaTime * particlesRefLerp);
+        }
     }
 
     private void UpdateMovement()
@@ -113,7 +121,7 @@ public class PlayerCore : MonoBehaviour
         for (int i = 0; i < ropePoints; ++i)
         {
             //Vector3 offset = Vector3.down * i * (ropePoints - 1 - i) * Mathf.Pow(2f, maxRopeDist - mouseDist) * ropeHangMult;
-            Vector3 offset = Vector3.down * i * (ropePoints - 1 - i) * Mathf.Pow(maxRopeDist - mouseDist + 0.2f, 1.1f) * ropeHangMult;
+            Vector3 offset = Vector3.down * i * (ropePoints - 1 - i) * Mathf.Pow(maxRopeDist - mouseDist + 0.05f, 1.1f) * ropeHangMult;
             ropeRenderer.SetPosition(i, nozzleRef.position + mousePos * (i / ((float)ropePoints - 1)) + offset + nozzleOffset);
         }
 
@@ -145,7 +153,10 @@ public class PlayerCore : MonoBehaviour
                     if (delta > 0f) floor.HeatTile(new Vector3Int(x, y), delta);
                 }
             }
+
+            spraySound.volume = Mathf.Lerp(spraySound.volume, 1f, Time.deltaTime * 10f);
         }
+        spraySound.volume = Mathf.Lerp(spraySound.volume, 0f, Time.deltaTime * 10f);
         
         // Visual
         if (sprayParticles.isPlaying != _sprayInputAction.inProgress)
@@ -181,12 +192,13 @@ public class PlayerCore : MonoBehaviour
             hpImages[i].enabled = i < hp;
         }
 
-        if (hp == 0)
+        if (hp <= 0)
         {
             skinTransform.gameObject.SetActive(false);
             ripAnim.gameObject.SetActive(true);
             ripAnim.Play("Plume", 0, 0f);
             ripParticles.Play();
+            GameMan.inst.completeTimer = 2f;
             dead = true;
         }
     }

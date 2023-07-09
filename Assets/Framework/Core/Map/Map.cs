@@ -126,7 +126,24 @@ public class Floor
                 int roomOffsetY = Random.Range(1, current.bounds.size.y - roomHeight + 1);
                 
                 // add to rooms list
-                rooms.Add(new Room(new RectInt(current.bounds.x + roomOffsetX, current.bounds.y + roomOffsetY, roomWidth, roomHeight)));
+                Room r = new Room(new RectInt(current.bounds.x + roomOffsetX, current.bounds.y + roomOffsetY, roomWidth, roomHeight));
+                rooms.Add(r);
+
+                Vector2[] corners =
+                {
+                    new Vector2(r.bounds.xMin, r.bounds.yMin),
+                    new Vector2(r.bounds.xMin, r.bounds.yMax),
+                    new Vector2(r.bounds.xMax, r.bounds.yMin),
+                    new Vector2(r.bounds.xMax, r.bounds.yMax)
+                };
+                
+                for (int i = 0; i < corners.Length; ++i)
+                {
+                    if (Random.value > 0.25f) continue;
+                    GameObject g = GameObject.Instantiate(GameMan.inst.enemy,
+                        Vector2.MoveTowards(corners[i], r.bounds.center, 2.5f),
+                        Quaternion.identity);
+                }
 
                 for (int x = 0; x < roomWidth; ++x)
                 {
@@ -184,7 +201,21 @@ public class Floor
             nodes.Enqueue(current.a);
             nodes.Enqueue(current.b);
         }
-        
+
+        // floor and hall count
+        int count = 0;
+        for (int x = 0; x < _tiles.GetLength(0); ++x)
+        {
+            for (int y = 0; y < _tiles.GetLength(1); ++y)
+            {
+                if (_tiles[x, y] == Tile.Floor || _tiles[x, y] == Tile.Hall)
+                {
+                    ++count;
+                }
+            }
+        }
+        GameMan.inst.SetMaxScore(count);
+
         // Mark tiles left as "outside"
         for (int x = -1; x <= _tiles.GetLength(0); ++x)
         {
@@ -242,9 +273,13 @@ public class Floor
             {
                 current.fireParticles.Play();
                 current.lastHeated = Time.time;
+                AudioManager.instance.PlaySound("Button");
                 GameMan.inst.camShaker.ShakeOnce(14f, 1f, 0f, 0.2f);
             }
-            else current.fireParticles.Stop();
+            else
+            {
+                current.fireParticles.Stop();
+            }
         }
     }
     
@@ -277,13 +312,13 @@ public class Floor
 
     public Tile GetTileType(int x, int y)
     {
-        if (x < 0 || x > _tiles.GetLength(0) || y < 0 || y > _tiles.GetLength(1)) return Tile.None;
+        if (x < 0 || x >= _tiles.GetLength(0) || y < 0 || y >= _tiles.GetLength(1)) return Tile.None;
         return _tiles[x, y];
     }
     
     public TileData GetTileData(int x, int y)
     {
-        if (x < 0 || x > _tiles.GetLength(0) || y < 0 || y > _tiles.GetLength(1)) return null;
+        if (x < 0 || x >= _tiles.GetLength(0) || y < 0 || y >= _tiles.GetLength(1)) return null;
         return _tileData[x, y];
     }
 
