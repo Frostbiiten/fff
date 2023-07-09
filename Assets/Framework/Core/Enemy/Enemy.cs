@@ -7,19 +7,25 @@ public class Enemy : MonoBehaviour
     public enum State
     {
         Default,
-        Chase
+        Chase,
+        Attack
     }
 
+    private State currentState = State.Default;
+    private Room _currentRoom;
+    private float shakeTimer;
+    
     [SerializeField] private Rigidbody2D rb;
-    [SerializeField] private float shakeTimer;
-    [SerializeField] private State currentState = State.Default;
     [SerializeField] private float speed;
     [SerializeField] private float hp;
-    private Room _currentRoom;
     [SerializeField] private Transform skin;
     [SerializeField] private float shakeDist = 0.2f;
     [SerializeField] private float shakeInterval = 0.2f;
     [SerializeField] private Animator animator;
+    
+    [SerializeField] private GameObject attackObj;
+    [SerializeField] private float attackDist = 4f;
+    private float attackTimer;
 
     // Update is called once per frame
     void Update()
@@ -34,8 +40,16 @@ public class Enemy : MonoBehaviour
                 skin.localPosition = -skin.localPosition + new Vector3(Random.value - 0.5f, Random.value - 0.5f) * shakeDist;
                 skin.localPosition *= 0.8f;
             }
-            
-            if (shakeTimer < 0f) animator.Play("EnemyDefault");
+
+            if (hp <= 0)
+            {
+                Instantiate(GameMan.inst.plume, transform.position, Quaternion.identity);
+                Destroy(gameObject);
+            }
+            else
+            {
+                if (shakeTimer < 0f) animator.Play("EnemyDefault");
+            }
         }
         else
         {
@@ -53,6 +67,21 @@ public class Enemy : MonoBehaviour
                         currentState = State.Chase;
                     }
                     break;
+                
+                case State.Attack:
+                    attackTimer -= Time.deltaTime;
+                    if (attackTimer < 1f && attackTimer + Time.deltaTime > 1f)
+                    {
+                        ThrowAttack();
+                    }
+
+                    if (attackTimer < 0f)
+                    {
+                        currentState = State.Default;
+                    }
+                    
+                    break;
+                
                 case State.Chase:
                     break;
             }
@@ -73,12 +102,27 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    private void ThrowAttack()
+    {
+        Projectile proj = Instantiate(attackObj, transform.position, Quaternion.identity).GetComponent<Projectile>();
+        proj.Init(transform.position, PlayerCore.inst.transform.position, 1f);
+    }
+
     private void Chase()
     {
         Vector2 playerDirection = PlayerCore.inst.transform.position - transform.position;
         float playerDistance = playerDirection.magnitude;
         playerDirection /= playerDistance;
-        rb.velocity = playerDirection * speed;
+
+        if (playerDistance > attackDist)
+        {
+            rb.velocity = playerDirection * speed;
+        }
+        else
+        {
+            currentState = State.Attack;
+            attackTimer = 2f;
+        }
     }
     
     private void FixedUpdate()
@@ -93,6 +137,12 @@ public class Enemy : MonoBehaviour
             {
                 default:
                 case State.Default:
+                    rb.velocity = Vector2.zero;
+                    break;
+                
+                case State.Attack:
+                    rb.velocity = Vector2.zero;
+                    break;
 
                 case State.Chase:
                     Chase();

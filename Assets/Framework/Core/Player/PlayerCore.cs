@@ -1,5 +1,6 @@
 using UnityEngine.InputSystem;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerCore : MonoBehaviour
 {
@@ -31,8 +32,12 @@ public class PlayerCore : MonoBehaviour
     [SerializeField] private Collider2D burnCollider; 
     [SerializeField] private Transform burnPoint; 
     [SerializeField] private float burnRadius; 
-    [SerializeField] private float heatSpeed; 
-
+    [SerializeField] private float heatSpeed;
+    private int hp = 3;
+    
+    [SerializeField] private Image[] hpImages;
+    private bool dead = false;
+    
     [Header("Visual")]
     [SerializeField] private int ropePoints = 5;
     [SerializeField] private float maxRopeDist = 500;
@@ -47,6 +52,9 @@ public class PlayerCore : MonoBehaviour
     [SerializeField] private ParticleSystem sprayParticles;
     [SerializeField] private Animator extinguisherAnimator;
     [SerializeField] private float mouseDistOffset;
+    
+    [SerializeField] private Animator ripAnim;
+    [SerializeField] private ParticleSystem ripParticles;
 
     public void Awake()
     {
@@ -56,6 +64,7 @@ public class PlayerCore : MonoBehaviour
         _directionalInputAction = inputAsset.FindAction("Directional");
         _sprayInputAction = inputAsset.FindAction("Spray");
         ropeRenderer.positionCount = ropePoints;
+        hp = 3;
     }
 
     private void UpdateInput()
@@ -88,6 +97,7 @@ public class PlayerCore : MonoBehaviour
     public void Update()
     {
         UpdateInput();
+        if (dead) return;
         var pos = new Vector2Int((int)transform.position.x, (int)transform.position.y);
         currentRoom = GameMan.inst.map.GetFloor(currentFloor).GetRoom(pos);
 
@@ -144,7 +154,7 @@ public class PlayerCore : MonoBehaviour
             else sprayParticles.Stop();
         }
         
-        skinTransform.up = Vector3.Lerp(skinTransform.up, Vector3.up, 0.6f);
+        skinTransform.up = Vector3.Lerp(skinTransform.up, Vector3.up, 0.8f);
         mouseTransform.right = mousePos;
     }
 
@@ -155,6 +165,29 @@ public class PlayerCore : MonoBehaviour
 
     public void FixedUpdate()
     {
+        if (dead)
+        {
+            rb.velocity = Vector2.Lerp(rb.velocity, Vector2.zero, 0.5f);
+            return;
+        }
         UpdateMovement();
+    }
+
+    public void ChangeHP(int delta)
+    {
+        hp += delta;
+        for (int i = 0; i < hpImages.Length; ++i)
+        {
+            hpImages[i].enabled = i < hp;
+        }
+
+        if (hp == 0)
+        {
+            skinTransform.gameObject.SetActive(false);
+            ripAnim.gameObject.SetActive(true);
+            ripAnim.Play("Plume", 0, 0f);
+            ripParticles.Play();
+            dead = true;
+        }
     }
 }

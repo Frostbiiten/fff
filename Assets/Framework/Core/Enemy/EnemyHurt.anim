@@ -23,11 +23,9 @@ AnimationClip:
     - time: 0
       value: {fileID: -3963313584121827987, guid: 403de3b3e7af037489b69a0dac980cac, type: 3}
     - time: 0.06666667
-      value: {fileID: -3963313584121827987, guid: 403de3b3e7af037489b69a0dac980cac, type: 3}
-    - time: 0.13333334
       value: {fileID: -1194994840700550527, guid: 403de3b3e7af037489b69a0dac980cac, type: 3}
     attribute: m_Sprite
-    path: skin
+    path: Shaker/skin
     classID: 212
     script: {fileID: 0}
     flags: 2
@@ -39,7 +37,7 @@ AnimationClip:
   m_ClipBindingConstant:
     genericBindings:
     - serializedVersion: 2
-      path: 41510942
+      path: 1908057880
       attribute: 0
       script: {fileID: 0}
       typeID: 212
@@ -49,14 +47,13 @@ AnimationClip:
       isSerializeReferenceCurve: 0
     pptrCurveMapping:
     - {fileID: -3963313584121827987, guid: 403de3b3e7af037489b69a0dac980cac, type: 3}
-    - {fileID: -3963313584121827987, guid: 403de3b3e7af037489b69a0dac980cac, type: 3}
     - {fileID: -1194994840700550527, guid: 403de3b3e7af037489b69a0dac980cac, type: 3}
   m_AnimationClipSettings:
     serializedVersion: 2
     m_AdditiveReferencePoseClip: {fileID: 0}
     m_AdditiveReferencePoseTime: 0
     m_StartTime: 0
-    m_StopTime: 0.20000002
+    m_StopTime: 0.13333334
     m_OrientationOffsetY: 0
     m_Level: 0
     m_CycleOffset: 0

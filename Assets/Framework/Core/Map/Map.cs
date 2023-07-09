@@ -252,10 +252,26 @@ public class Floor
     {
         if (pos.x < 0 || pos.y < 0 || pos.x >= _tileData.GetLength(0) || pos.y >= _tileData.GetLength(1)) return;
         var current = _tileData[pos.x, pos.y];
+        bool prev = current.heat > 0.25f;
         if (_tiles[pos.x, pos.y] != Tile.Hall && _tiles[pos.x, pos.y] != Tile.Floor) return;
         current.heat = Mathf.MoveTowards(_tileData[pos.x, pos.y].heat, 1f, delta);
         
+        if (prev != (current.heat > 0.25f)) GameMan.inst.AddScore(1);
         //if (current.heat < 0.1f) current.lastHeated = Time.time;
+        UpdateTile(pos);
+    }
+    
+    public void CoolTile(Vector3Int pos, float delta)
+    {
+        if (pos.x < 0 || pos.y < 0 || pos.x >= _tileData.GetLength(0) || pos.y >= _tileData.GetLength(1)) return;
+        var current = _tileData[pos.x, pos.y];
+        bool prev = current.heat > 0.25f;
+        if (_tiles[pos.x, pos.y] != Tile.Hall && _tiles[pos.x, pos.y] != Tile.Floor) return;
+        current.heat = Mathf.MoveTowards(_tileData[pos.x, pos.y].heat, 0f, delta);
+        
+        if (prev != (current.heat > 0.25f)) GameMan.inst.AddScore(-1);
+        //if (current.heat < 0.1f) current.lastHeated = Time.time;
+        current.lastHeated = Time.time - delta * 0.2f; // *
         UpdateTile(pos);
     }
 

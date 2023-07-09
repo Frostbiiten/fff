@@ -9,7 +9,7 @@ public class Plume : MonoBehaviour
 
     public void OnEnable()
     {
-        GameMan.inst.camShaker.ShakeOnce(10f, 2f, 0f, 0.5f);
+        GameMan.inst.camShaker.ShakeOnce(30f, 4f, 0f, 0.85f);
         anim.Play("Plume", 0, 0f);
         particles.Play();
     }
