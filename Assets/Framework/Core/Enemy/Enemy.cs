@@ -131,6 +131,7 @@ public class Enemy : MonoBehaviour
                 skin.localPosition = new Vector2(Mathf.Cos(ang) * shakeDist, Mathf.Sin(ang) * shakeDist);
                 shakeTimer = 0.3f;
                 animator.Play("EnemyHurt");
+                AudioManager.instance.PlaySound("Crack");
             }
         }
 

@@ -17,7 +17,6 @@ MonoBehaviour:
     clip:
       clips:
       - {fileID: 8300000, guid: d60d1babbefd4834597f39b84a4d20b4, type: 3}
-      - {fileID: 8300000, guid: 6faaa2fc83deb2443aa7fe7acd01bcf0, type: 3}
       volume: 1
   - name: Woosh
     clip:

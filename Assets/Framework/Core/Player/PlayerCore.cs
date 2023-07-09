@@ -197,6 +197,7 @@ public class PlayerCore : MonoBehaviour
             skinTransform.gameObject.SetActive(false);
             ripAnim.gameObject.SetActive(true);
             ripAnim.Play("Plume", 0, 0f);
+            AudioManager.instance.PlaySound("Die");
             ripParticles.Play();
             GameMan.inst.completeTimer = 2f;
             dead = true;

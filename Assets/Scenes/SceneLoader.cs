@@ -23,6 +23,8 @@ public class SceneLoader : MonoBehaviour
     void FinishLoading(Scene scene, LoadSceneMode mode)
     {
         if (loadingAnimation) loadingAnimation.Play("Finish");
+        if (scene.name == "Menu" && Progressor.instance != null) Destroy(Progressor.instance.gameObject);
+        
         loading = false;
     }
     

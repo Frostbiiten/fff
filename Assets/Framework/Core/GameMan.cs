@@ -45,6 +45,12 @@ public class GameMan : MonoBehaviour
         Time.timeScale = 1f;
         floorText.text = "FLOOR " + Progressor.instance.currentLevel;
 
+        // Update high score
+        int highScore = Mathf.Max(Progressor.instance.currentLevel, PlayerPrefs.GetInt("Highscore", 0));
+        PlayerPrefs.SetInt("Highscore", highScore);
+        PlayerPrefs.SetInt("Latest", Progressor.instance.currentLevel);
+        PlayerPrefs.Save();
+
         map = new Map();
         map.AddFloor(stats);
         
