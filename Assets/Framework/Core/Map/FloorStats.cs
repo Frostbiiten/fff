@@ -1,5 +1,5 @@
-using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine;
 
 [CreateAssetMenu(fileName = "Data", menuName = "ScriptableObjects/Floor Stats", order = 1)]
 public class FloorStats : ScriptableObject
@@ -13,6 +13,8 @@ public class FloorStats : ScriptableObject
     [field: SerializeField] public int roomSize;
     [field: SerializeField] public int floorSize;
     [field: SerializeField] public AnimationCurve tileBounceAnim;
+    [field: SerializeField] public TileBase[] floorTiles { get; private set; }
+    [field: SerializeField] public GameObject fireParticles { get; private set; }
 
     [field: SerializeField] public TileBase outsideTile { get; private set; }
     [field: SerializeField] public TileBase floorTile { get; private set; }

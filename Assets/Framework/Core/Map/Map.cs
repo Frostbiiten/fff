@@ -25,15 +25,17 @@ public class Room
 
 public class Floor
 {
-    class TileData
+    public class TileData
     {
         public float heat;
         public float lastHeated;
+        public ParticleSystem fireParticles;
 
-        public TileData()
+        public TileData(FloorStats stats)
         {
             heat = 0f;
-            lastHeated = 20f;
+            lastHeated = -1f;
+            fireParticles = GameObject.Instantiate(stats.fireParticles, GameMan.inst.transform).transform.GetChild(0).GetComponent<ParticleSystem>();
         }
     }
     
@@ -45,18 +47,21 @@ public class Floor
     
     public Floor(int width, int height, GameObject floorRef, FloorStats stats)
     {
-        _tiles = new Tile[width, height];
+        _tileMap = GameObject.Instantiate(floorRef, GameMan.inst.transform).GetComponent<Tilemap>();
         _tileData = new TileData[width, height];
+        _tiles = new Tile[width, height];
+        this.stats = stats;
+        
         for (int i = 0; i < _tileData.GetLength(0); ++i)
         {
             for (int j = 0; j < _tileData.GetLength(1); ++j)
             {
-                _tileData[i, j] = new TileData();
+                _tileData[i, j] = new TileData(stats);
+                _tileData[i, j].fireParticles.transform.parent.position = new Vector3(i + 0.5f, j + 0.5f, j / 1000f);
+                var pos = new Vector3Int(i, j);
+                _tileMap.SetTileFlags(pos, TileFlags.None);
             }
         }
-        
-        _tileMap = GameObject.Instantiate(floorRef, GameMan.inst.transform).GetComponent<Tilemap>();
-        this.stats = stats;
     }
 
     public class BSPNode
@@ -132,7 +137,7 @@ public class Floor
                         _tiles[newX, newY] = Tile.Floor;
                         var pos = new Vector3Int(newX, newY);
                         _tileMap.SetTile(pos, stats.floorTile);
-                        _tileMap.SetTileFlags(pos, TileFlags.None);
+                        UpdateTile(pos);
                         //_tileMap.SetTransformMatrix();
                         //_tileMap.SetColor(pos, new Color(v, v, v, 1f));
                         //t.color = new Color(Random.value, Random.value, Random.value, 1);
@@ -157,7 +162,9 @@ public class Floor
                     if (_tiles[x, tileY] == (int)Tile.None)
                     {
                         _tiles[x, tileY] = Tile.Hall;
-                        _tileMap.SetTile(new Vector3Int(x, tileY), stats.wallTile);
+                        var pos = new Vector3Int(x, tileY);
+                        _tileMap.SetTile(pos, stats.wallTile);
+                        UpdateTile(pos);
                     }
                 }
             }
@@ -169,7 +176,8 @@ public class Floor
                     if (_tiles[tileX, y] == (int)Tile.None)
                     {
                         _tiles[tileX, y] = Tile.Hall;
-                        _tileMap.SetTile(new Vector3Int(tileX, y), stats.wallTile);
+                        var pos = new Vector3Int(tileX, y);
+                        UpdateTile(pos);
                     }
                 }
             }
@@ -221,14 +229,46 @@ public class Floor
 
     public void UpdateTile(Vector3Int pos)
     {
-        _tileMap.SetColor(pos, stats.heatGradient.Evaluate(_tileData[pos.x, pos.y].heat));
+        if (_tiles[pos.x, pos.y] != Tile.Hall && _tiles[pos.x, pos.y] != Tile.Floor) return;
+        
+        var current = _tileData[pos.x, pos.y];
+        int index = (int)Mathf.Clamp(_tileData[pos.x, pos.y].heat * stats.floorTiles.Length, 0, stats.floorTiles.Length - 1);
+        _tileMap.SetTile(pos, stats.floorTiles[index]);
+
+        bool shouldPlay = index == stats.floorTiles.Length - 1;
+        if (shouldPlay != current.fireParticles.isPlaying)
+        {
+            if (shouldPlay)
+            {
+                current.fireParticles.Play();
+                current.lastHeated = Time.time;
+                GameMan.inst.camShaker.ShakeOnce(14f, 1f, 0f, 0.2f);
+            }
+            else current.fireParticles.Stop();
+        }
     }
     
     public void HeatTile(Vector3Int pos, float delta)
     {
-        _tileData[pos.x, pos.y].heat = Mathf.MoveTowards(_tileData[pos.x, pos.y].heat, 1f, delta);
-        _tileData[pos.x, pos.y].lastHeated = Time.time;
+        if (pos.x < 0 || pos.y < 0 || pos.x >= _tileData.GetLength(0) || pos.y >= _tileData.GetLength(1)) return;
+        var current = _tileData[pos.x, pos.y];
+        if (_tiles[pos.x, pos.y] != Tile.Hall && _tiles[pos.x, pos.y] != Tile.Floor) return;
+        current.heat = Mathf.MoveTowards(_tileData[pos.x, pos.y].heat, 1f, delta);
+        
+        //if (current.heat < 0.1f) current.lastHeated = Time.time;
         UpdateTile(pos);
+    }
+
+    public Tile GetTileType(int x, int y)
+    {
+        if (x < 0 || x > _tiles.GetLength(0) || y < 0 || y > _tiles.GetLength(1)) return Tile.None;
+        return _tiles[x, y];
+    }
+    
+    public TileData GetTileData(int x, int y)
+    {
+        if (x < 0 || x > _tiles.GetLength(0) || y < 0 || y > _tiles.GetLength(1)) return null;
+        return _tileData[x, y];
     }
 
     public void Update(float delta)
@@ -237,9 +277,8 @@ public class Floor
         {
             for (int y = 0; y < _tiles.GetLength(1); ++y)
             {
-                if (_tileData[x, y].heat > 0.001f)
+                if (Time.deltaTime - _tileData[x, y].lastHeated < 1f)
                 {
-                    _tileData[x, y].heat = Mathf.MoveTowards(_tileData[x, y].heat, 0f, delta * 0.01f);
                     Vector3Int pos = new Vector3Int(x, y);
                     _tileMap.SetTransformMatrix(pos,
                         Matrix4x4.Translate(Vector3.up * stats.tileBounceAnim.Evaluate(Time.time - _tileData[x, y].lastHeated)));

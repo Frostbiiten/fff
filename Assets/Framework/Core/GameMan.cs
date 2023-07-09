@@ -1,3 +1,4 @@
+using EZCameraShake;
 using UnityEngine;
 
 public class GameMan : MonoBehaviour
@@ -6,6 +7,7 @@ public class GameMan : MonoBehaviour
 
     [field: SerializeField] public PlayerCore playerCore { get; private set; }
     [field: SerializeField] public FloorStats stats { get; private set; }
+    [field: SerializeField] public CameraShaker camShaker { get; private set; }
     public Map map { get; private set; }
 
     public void Awake()
